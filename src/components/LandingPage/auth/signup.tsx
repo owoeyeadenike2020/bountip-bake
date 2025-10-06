@@ -136,7 +136,7 @@ import { FaUser } from 'react-icons/fa6';
 import { AuthService, type SignupRequest } from '@/service/authService';
 import toast from 'react-hot-toast';
 
-export default function EnhancedSignupPage() {
+export default function SignupPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
