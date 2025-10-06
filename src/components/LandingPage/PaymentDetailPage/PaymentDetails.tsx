@@ -493,7 +493,7 @@
 
 
 'use client';
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import { X, Copy, Upload, User, Mail, Tag, MapPin, Clock, Phone, Truck } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useCart } from '@/hooks/useCart';
@@ -509,15 +509,33 @@ export default function PaymentDetailsPage() {
   const [currentStep, setCurrentStep] = useState<PaymentStep>('bank-transfer');
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  // const [orderId, setOrderId] = useState<string | null>(null);
+  const [customerName, setCustomerName] = useState<string | null>(null);
+  const [customerEmail, setCustomerEmail] = useState<string | null>(null);
+  const [customerPhone, setCustomerPhone] = useState<string | null>(null);
+  const [orderReference, setOrderReference] = useState<string | null>(null);
+
+  useEffect(() => {
+    const storedCustomerName = localStorage.getItem("customerName");
+    setCustomerName(storedCustomerName);
+    const storedCustomerEmail = localStorage.getItem("customerEmail");
+    setCustomerEmail(storedCustomerEmail);  
+    const storedCustomerPhone = localStorage.getItem("customerPhone");
+    setCustomerPhone(storedCustomerPhone);
+    const storedOrderReference = localStorage.getItem("orderReference");
+    setOrderReference(storedOrderReference);
+    // const storedOrderId = localStorage.getItem("orderId");
+    // setOrderId(storedOrderId);
+  }, []);
 
   // Mock user and order data
   const userData = {
-    name: 'John Doe',
-    email: 'John@example.com'
+    name: customerName || 'John Deo',
+    email: customerEmail || 'john@email.com',
   };
 
   const orderData = {
-    orderNumber: '#00002234III',
+    orderNumber: orderReference || '#00002234III',
     items: cartItems.map(item => ({
       name: item.name,
       quantity: item.quantity,
@@ -526,7 +544,7 @@ export default function PaymentDetailsPage() {
     deliveryMethod: 'Delivery',
     address: '123, Festac Town, Lagos',
     deliveryTime: 'Under 30 mins',
-    phone: '+234 (802) 345 - 6780',
+    phone: customerPhone || '+234 (802) 345 - 6780',
     deliveryService: 'Uber Eats'
   };
 
