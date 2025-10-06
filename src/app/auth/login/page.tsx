@@ -1,4 +1,4 @@
-import LoginPage from "@/components/LandingPage/Auth/login";
+import LoginPage from "@/components/LandingPage/Auth/Login";
 export default function Checkout() {
   return <LoginPage />;
 }
