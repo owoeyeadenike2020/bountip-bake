@@ -1,15 +1,18 @@
+
 // 'use client';
 // import React, { useState } from 'react';
 // import { X, Copy, Upload, User, Mail, Tag, MapPin, Clock, Phone, Truck } from 'lucide-react';
 // import { useRouter } from 'next/navigation';
 // import { useCart } from '@/hooks/useCart';
 // import { OrderSuccessModal } from './OrderSuccessModal';
+// import { toast } from 'react-toastify';
+// import { orderService } from '@/service/orderService';
 
 // type PaymentStep = 'bank-transfer' | 'upload-proof' | 'confirm';
 
 // export default function PaymentDetailsPage() {
 //   const router = useRouter();
-//   const { cartItems, getCartTotal } = useCart();
+//   const { cartItems, getCartTotalSync } = useCart();
 //   const [currentStep, setCurrentStep] = useState<PaymentStep>('bank-transfer');
 //   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
 //   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -37,12 +40,12 @@
 //   const bankDetails = {
 //     bankName: 'First Bank of Nigeria',
 //     accountNumber: '0001234005',
-//     amount: getCartTotal()
+//     amount: getCartTotalSync()
 //   };
 
 //   const handleCopyToClipboard = (text: string) => {
 //     navigator.clipboard.writeText(text);
-//     alert('Copied to clipboard!');
+//     toast.success('Copied to clipboard!', { autoClose: 2000 });
 //   };
 
 //   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -53,13 +56,72 @@
 //     }
 //   };
 
-//   const handleProceedToPayment = () => {
-//     console.log('Processing payment...');
-//     // alert('Payment submitted successfully!');
-//     setShowSuccessModal(true);
-//   };
+//   // const handleProceedToPayment = () => {
+//   //   if (!uploadedFile) {
+//   //     toast.error('Please upload a file before proceeding.', { autoClose: 3000 });
+//   //     return;
+//   //   }
+//   //   console.log('Processing payment with file:', uploadedFile.name);
+//   //   toast.success('Payment proof uploaded successfully!', { autoClose: 3000 });
+//   //   setShowSuccessModal(true);
+//   // };
 
-//   const formatPrice = (price: number) => `£${price.toFixed(2)}`;
+
+//   const handleProceedToPayment = async () => {
+//   if (!uploadedFile) {
+//     toast.error('Please upload payment proof');
+//     return;
+//   }
+
+//   const toastId = toast.loading('Uploading payment proof...');
+  
+//   try {
+//     const orderId = localStorage.getItem('orderId');
+//     if (!orderId) {
+//       throw new Error('Order ID not found. Please start from checkout.');
+//     }
+
+//     // Upload payment proof
+//     await orderService.uploadPaymentProof({
+//       image: uploadedFile,
+//       resourceName: 'orderPayment',
+//       resourceId: orderId
+//     });
+
+//     // Complete checkout with payment
+//     const customerId = localStorage.getItem('customerId');
+//     const addressId = localStorage.getItem('addressId');
+
+//     if (!customerId || !addressId) {
+//       throw new Error('Customer information not found. Please complete checkout first.');
+//     }
+
+//     await orderService.checkoutOrder(orderId, {
+//       status: 'Pending',
+//       addressId,
+//       customerId,
+//       deliveryMethod: 'Delivery',
+//       specialInstructions: ''
+//     });
+
+//     toast.success('Payment proof uploaded successfully!');
+//     setShowSuccessModal(true);
+    
+//     // Clear order data after successful payment
+//     setTimeout(() => {
+//       localStorage.removeItem('orderId');
+//       localStorage.removeItem('orderReference');
+//     }, 1000);
+//   } catch (error) {
+//     console.error('Payment upload error:', error);
+//     toast.error(
+//       error instanceof Error ? error.message : 'Failed to upload payment proof'
+//     );
+//   }
+// };
+
+
+//   const formatPrice = (price: number) => `€${price.toFixed(2)}`;
 
 //   const progressWidth = currentStep === 'bank-transfer' ? '50%' : currentStep === 'upload-proof' ? '75%' : '100%';
 
@@ -69,7 +131,6 @@
 //   }
 
 //   return (
-//     <div>
 //     <div className="min-h-screen">
 //       {/* Mobile View */}
 //       <div className="lg:hidden">
@@ -81,7 +142,6 @@
 //             </button>
 //           </div>
           
-//           {/* Progress Bar */}
 //           <div className="w-full bg-gray-200 rounded-full h-2">
 //             <div 
 //               className="bg-green-500 h-2 rounded-full transition-all duration-300"
@@ -91,7 +151,6 @@
 //         </div>
 
 //         <div className="p-4 space-y-6">
-//           {/* Bank Transfer Step */}
 //           {currentStep === 'bank-transfer' && (
 //             <>
 //               <div className="bg-white rounded-lg p-6 space-y-4">
@@ -151,14 +210,13 @@
 //             </>
 //           )}
 
-//           {/* Upload Proof Step */}
 //           {currentStep === 'upload-proof' && (
 //             <>
-//               <div className="bg-white rounded-lg p-6">
+//               <div className="bg-gray-300 rounded-lg p-6">
 //                 <h2 className="font-bold text-lg mb-2">Upload Evidence of Payment</h2>
 //                 <p className="text-sm text-gray-500 mb-4">Upload</p>
                 
-//                 <label className="border-2 border-dashed border-gray-300 rounded-lg p-8 flex flex-col items-center justify-center cursor-pointer hover:border-green-500 transition-colors">
+//                 <label className="bg-gray-300 rounded-lg p-8 flex flex-col items-center justify-center cursor-pointer hover:border-green-500 transition-colors">
 //                   <input 
 //                     type="file" 
 //                     accept="image/jpeg,image/png,image/svg+xml"
@@ -172,11 +230,14 @@
 //                     <span className="font-medium">Click</span> or <span className="text-green-600">Drag</span> to Upload evidence
 //                   </p>
 //                   <p className="text-xs text-gray-500 mt-1">jpg, png & svg up to 10mb</p>
+//                   {uploadedFile && (
+//                     <p className="text-sm text-gray-700 mt-2">Selected: {uploadedFile.name}</p>
+//                   )}
 //                 </label>
 //               </div>
 
 //               <button
-//                 onClick={() => setCurrentStep('confirm')}
+//                 onClick={handleProceedToPayment}
 //                 className="w-full bg-green-500 hover:bg-green-600 text-white py-4 rounded-lg font-medium"
 //               >
 //                 Upload Proof of Payment
@@ -184,7 +245,6 @@
 //             </>
 //           )}
 
-//           {/* Confirm Payment Step */}
 //           {currentStep === 'confirm' && (
 //             <>
 //               <div className="space-y-4">
@@ -243,6 +303,12 @@
 //                     </div>
 //                   </div>
 //                 </div>
+//                 {uploadedFile && (
+//                   <div className="bg-white rounded-lg p-6">
+//                     <h3 className="font-bold mb-4">Uploaded File</h3>
+//                     <p className="text-sm text-gray-700">Selected: {uploadedFile.name}</p>
+//                   </div>
+//                 )}
 //               </div>
 
 //               <button
@@ -268,7 +334,6 @@
 //           </div>
 
 //           <div className="grid grid-cols-3 gap-8">
-//             {/* Left Column - Account, Order, Delivery Details */}
 //             <div className="space-y-6">
 //               <div className="bg-white rounded-lg p-6">
 //                 <h3 className="font-bold text-lg mb-4">Account Details</h3>
@@ -325,9 +390,14 @@
 //                   </div>
 //                 </div>
 //               </div>
+//               {uploadedFile && (
+//                 <div className="bg-white rounded-lg p-6">
+//                   <h3 className="font-bold text-lg mb-4">Uploaded File</h3>
+//                   <p className="text-sm text-gray-700">Selected: {uploadedFile.name}</p>
+//                 </div>
+//               )}
 //             </div>
 
-//             {/* Right Column - Payment Section */}
 //             <div className="col-span-2">
 //               <div className="bg-white rounded-lg p-8">
 //                 <h2 className="font-bold text-xl mb-6">Transfer {formatPrice(bankDetails.amount)} to the account below</h2>
@@ -371,7 +441,7 @@
 //                   Search for the bank name (first bank) on your bank app. Use this account for this transaction only
 //                 </p>
 
-//                 <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3 mb-8">
+//                 <div className="text-center rounded-lg p-4 flex items-start gap-3 mb-8">
 //                   <div className="w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-white text-sm flex-shrink-0">!</div>
 //                   <p className="text-red-600">Payment must be made 30 mins after order submission</p>
 //                 </div>
@@ -379,7 +449,7 @@
 //                 <div className="border-t border-gray-200 pt-8">
 //                   <h3 className="font-bold text-lg mb-4">Upload</h3>
                   
-//                   <label className="border-2 border-dashed border-gray-300 rounded-lg p-12 flex flex-col items-center justify-center cursor-pointer hover:border-green-500 transition-colors">
+//                   <label className=" bg-gray-200 rounded-lg p-12 flex flex-col items-center justify-center cursor-pointer hover:border-green-500 transition-colors">
 //                     <input 
 //                       type="file" 
 //                       accept="image/jpeg,image/png,image/svg+xml"
@@ -393,6 +463,9 @@
 //                       <span className="font-medium">Click</span> or <span className="text-green-600">Drag</span> to Upload evidence
 //                     </p>
 //                     <p className="text-sm text-gray-500">jpg, png & svg up to 10mb</p>
+//                     {uploadedFile && (
+//                       <p className="text-sm text-gray-700 mt-2">Selected: {uploadedFile.name}</p>
+//                     )}
 //                   </label>
 
 //                   <button
@@ -407,14 +480,15 @@
 //           </div>
 //         </div>
 //       </div>
+
+//       <OrderSuccessModal 
+//         isOpen={showSuccessModal} 
+//         onClose={handleSuccessModalClose}
+//       />
 //     </div>
-//     <OrderSuccessModal 
-//   isOpen={showSuccessModal} 
-//   onClose={handleSuccessModalClose}
-// />
-// </div>
 //   );
 // }
+
 
 
 
@@ -425,12 +499,13 @@ import { useRouter } from 'next/navigation';
 import { useCart } from '@/hooks/useCart';
 import { OrderSuccessModal } from './OrderSuccessModal';
 import { toast } from 'react-toastify';
+import { orderService } from '@/service/orderService';
 
 type PaymentStep = 'bank-transfer' | 'upload-proof' | 'confirm';
 
 export default function PaymentDetailsPage() {
   const router = useRouter();
-  const { cartItems, getCartTotal } = useCart();
+  const { cartItems, getCartTotalSync } = useCart();
   const [currentStep, setCurrentStep] = useState<PaymentStep>('bank-transfer');
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -458,7 +533,7 @@ export default function PaymentDetailsPage() {
   const bankDetails = {
     bankName: 'First Bank of Nigeria',
     accountNumber: '0001234005',
-    amount: getCartTotal()
+    amount: getCartTotalSync()
   };
 
   const handleCopyToClipboard = (text: string) => {
@@ -474,14 +549,57 @@ export default function PaymentDetailsPage() {
     }
   };
 
-  const handleProceedToPayment = () => {
+  const handleProceedToPayment = async () => {
     if (!uploadedFile) {
-      toast.error('Please upload a file before proceeding.', { autoClose: 3000 });
+      toast.error('Please upload payment proof');
       return;
     }
-    console.log('Processing payment with file:', uploadedFile.name);
-    toast.success('Payment proof uploaded successfully!', { autoClose: 3000 });
-    setShowSuccessModal(true);
+
+    // const toastId = toast.loading('Uploading payment proof...');
+    
+    try {
+      const orderId = localStorage.getItem('orderId');
+      if (!orderId) {
+        throw new Error('Order ID not found. Please start from checkout.');
+      }
+
+      // Upload payment proof
+      await orderService.uploadPaymentProof({
+        image: uploadedFile,
+        resourceName: 'orderPayment',
+        resourceId: orderId
+      });
+
+      // Complete checkout with payment
+      const customerId = localStorage.getItem('customerId');
+      const addressId = localStorage.getItem('addressId');
+
+      if (!customerId || !addressId) {
+        throw new Error('Customer information not found. Please complete checkout first.');
+      }
+
+      await orderService.checkoutOrder(orderId, {
+        status: 'Pending',
+        addressId,
+        customerId,
+        deliveryMethod: 'Delivery',
+        specialInstructions: ''
+      });
+
+      toast.success('Payment proof uploaded successfully!');
+      setShowSuccessModal(true);
+      
+      // // Clear order data after successful payment
+      // setTimeout(() => {
+      //   // localStorage.removeItem('orderId');
+      //   // localStorage.removeItem('orderReference');
+      // }, 1000);
+    } catch (error) {
+      console.error('Payment upload error:', error);
+      toast.error(
+        error instanceof Error ? error.message : 'Failed to upload payment proof'
+      );
+    }
   };
 
   const formatPrice = (price: number) => `€${price.toFixed(2)}`;
@@ -582,7 +700,7 @@ export default function PaymentDetailsPage() {
                 <label className="bg-gray-300 rounded-lg p-8 flex flex-col items-center justify-center cursor-pointer hover:border-green-500 transition-colors">
                   <input 
                     type="file" 
-                    accept="image/jpeg,image/png,image/svg+xml"
+                    accept=".pdf,.doc,.docx,.csv"
                     onChange={handleFileUpload}
                     className="hidden"
                   />
@@ -592,7 +710,7 @@ export default function PaymentDetailsPage() {
                   <p className="text-sm text-center">
                     <span className="font-medium">Click</span> or <span className="text-green-600">Drag</span> to Upload evidence
                   </p>
-                  <p className="text-xs text-gray-500 mt-1">jpg, png & svg up to 10mb</p>
+                  <p className="text-xs text-gray-500 mt-1">PDF, DOC, DOCX, CSV up to 10mb</p>
                   {uploadedFile && (
                     <p className="text-sm text-gray-700 mt-2">Selected: {uploadedFile.name}</p>
                   )}
@@ -812,10 +930,10 @@ export default function PaymentDetailsPage() {
                 <div className="border-t border-gray-200 pt-8">
                   <h3 className="font-bold text-lg mb-4">Upload</h3>
                   
-                  <label className=" bg-gray-200 rounded-lg p-12 flex flex-col items-center justify-center cursor-pointer hover:border-green-500 transition-colors">
+                  <label className="bg-gray-200 rounded-lg p-12 flex flex-col items-center justify-center cursor-pointer hover:border-green-500 transition-colors">
                     <input 
                       type="file" 
-                      accept="image/jpeg,image/png,image/svg+xml"
+                      accept=".pdf,.doc,.docx,.csv"
                       onChange={handleFileUpload}
                       className="hidden"
                     />
@@ -825,7 +943,7 @@ export default function PaymentDetailsPage() {
                     <p className="text-center mb-2">
                       <span className="font-medium">Click</span> or <span className="text-green-600">Drag</span> to Upload evidence
                     </p>
-                    <p className="text-sm text-gray-500">jpg, png & svg up to 10mb</p>
+                    <p className="text-sm text-gray-500">PDF, DOC, DOCX, CSV up to 10mb</p>
                     {uploadedFile && (
                       <p className="text-sm text-gray-700 mt-2">Selected: {uploadedFile.name}</p>
                     )}

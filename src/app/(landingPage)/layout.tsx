@@ -1,5 +1,7 @@
 // src/app/(landingPage)/layout.tsx
 import ClientLayoutWrapper from "@/components/LandingPage/ClientLayoutWrapper";
+import { ToastProvider } from "@/components/ToastProvider/ToastProvider";
+
 export default function LandingLayout({
   children,
 }: Readonly<{
@@ -8,6 +10,7 @@ export default function LandingLayout({
   return (
     <ClientLayoutWrapper>
       {children}
+      <ToastProvider />
     </ClientLayoutWrapper>
   );
 }

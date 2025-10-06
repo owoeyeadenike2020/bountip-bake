@@ -1,6 +1,6 @@
 // src/app/(landingPage)/layout.tsx
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+// import { ToastContainer } from 'react-toastify';
+// import 'react-toastify/dist/ReactToastify.css';
 import ClientLayoutWrapper from "./ClientLayoutWrapper";
 export default function AuthLayout({
   children,
@@ -9,7 +9,7 @@ export default function AuthLayout({
 }>) {
   return (
     <ClientLayoutWrapper>
-      <ToastContainer position="top-right" autoClose={3000} />
+      {/* <ToastContainer position="top-right" autoClose={3000} /> */}
       {children}
     </ClientLayoutWrapper>
   );

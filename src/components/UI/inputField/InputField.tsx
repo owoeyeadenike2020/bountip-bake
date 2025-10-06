@@ -29,7 +29,7 @@ const InputField: React.FC<InputFieldProps> = ({
     <div className="mb-6">
       <label className="block text-gray-600 text-sm mb-2">{label}</label>
       <div className="relative">
-        <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-black border-r border-gray-300 pr-3">
+        <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 border-r border-gray-300 pr-3">
           <Icon size={25} />
         </div>
         <input
